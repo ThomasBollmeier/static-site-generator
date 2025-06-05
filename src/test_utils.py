@@ -80,5 +80,37 @@ This is the same paragraph on a new line
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
 
+    def test_unordered_list(self):
+        md = """
+    ## My Todos:
+    
+    - Homework
+    - Running
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h2>My Todos:</h2><ul><li>Homework</li><li>Running</li></ul></div>",
+        )
+
+
+    def test_ordered_list(self):
+        md = """
+    ## My Todos:
+    
+    1. Homework
+    2. Running
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h2>My Todos:</h2><ol><li>Homework</li><li>Running</li></ol></div>",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

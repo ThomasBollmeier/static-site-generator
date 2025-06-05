@@ -1,6 +1,5 @@
-from htmlnode import HTMLNode, text_node_to_html_node, LeafNode
+from htmlnode import text_node_to_html_node, LeafNode, ParentNode
 from blocktype import block_to_block_type, BlockType
-from src.htmlnode import ParentNode
 from textnode import TextType, TextNode
 import re
 
@@ -9,10 +8,12 @@ def markdown_to_html_node(markdown):
     """
     Convert Markdown text to HTML node.
     """
+    regex_heading = re.compile(r"^#{1,6}\s")
+    regex_ordered_item = re.compile(r"^(\d+)\.\s")
+
     children = []
     tags = {
         BlockType.PARAGRAPH: "p",
-        BlockType.HEADING: "h1",
         BlockType.CODE: "pre",
         BlockType.QUOTE: "blockquote",
         BlockType.UNORDERED_LIST: "ul",
@@ -25,6 +26,35 @@ def markdown_to_html_node(markdown):
         if block_type == BlockType.CODE:
             block = block[3:-3].lstrip()
             block_children = [LeafNode("code", block)]
+        elif block_type == BlockType.HEADING:
+            match = regex_heading.match(block)
+            level = len(match.group(0)) - 1
+            text = block[level + 1:]
+            children.append(LeafNode("h" + str(level), text))
+            continue
+        elif block_type == BlockType.QUOTE:
+            quote = ""
+            for item in block.split("\n"):
+                item = item[2:].rstrip()
+                quote += item + "<br>"
+            children.append(LeafNode("blockquote", quote))
+            continue
+        elif block_type == BlockType.UNORDERED_LIST:
+            block = block.replace("\n", "")
+            block_children = []
+            for item in block.split("- "):
+                if not item.strip():
+                    continue
+                block_children.append(ParentNode("li", block_to_html_nodes(item)))
+        elif block_type == BlockType.ORDERED_LIST:
+            block_children = []
+            for item in block.split("\n"):
+                m = regex_ordered_item.match(item)
+                item = item[m.end(0):]
+                item = item.strip()
+                if not item:
+                    continue
+                block_children.append(ParentNode("li", block_to_html_nodes(item)))
         else:
             block = block.replace("\n", " ")
             block_children = block_to_html_nodes(block)
@@ -61,8 +91,8 @@ def text_to_textnodes(text):
     ret = split_nodes_delimiter(ret, "**", TextType.BOLD)
     ret = split_nodes_delimiter(ret, "_", TextType.ITALIC)
     ret = split_nodes_delimiter(ret, "`", TextType.CODE)
-    ret = split_nodes_link(ret)
     ret = split_nodes_image(ret)
+    ret = split_nodes_link(ret)
     return ret
 
 
