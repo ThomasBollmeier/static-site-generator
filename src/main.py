@@ -5,8 +5,7 @@ from generator import generate_pages_recursive
 
 def main():
     base_path = sys.argv[1] if len(sys.argv) > 1 else "/"
-    print(f"Base path: {base_path}")
-    copy_dir("static", "public")
+    copy_dir("static", "docs")
     generate_pages_recursive(base_path,
                              "content",
                              "template.html",
