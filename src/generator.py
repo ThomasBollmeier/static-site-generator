@@ -12,7 +12,7 @@ def extract_title(markdown):
             return line[2:].strip()
     raise Exception("Title not found in markdown string.")
 
-def generate_pages_recursive(from_path, template_path, dest_path):
+def generate_pages_recursive(base_path, from_path, template_path, dest_path):
     """
     Recursively generate pages from markdown files in a directory.
     """
@@ -22,16 +22,16 @@ def generate_pages_recursive(from_path, template_path, dest_path):
     if os.path.isfile(from_path):
         if from_path.endswith(".md"):
             dest_file = os.path.splitext(dest_path)[0] + ".html"
-            generate_page(from_path, template_path, dest_file)
+            generate_page(base_path, from_path, template_path, dest_file)
         return
 
     for item in os.listdir(from_path):
         item_path = os.path.join(from_path, item)
         dest_item_path = os.path.join(dest_path, item)
-        generate_pages_recursive(item_path, template_path, dest_item_path)
+        generate_pages_recursive(base_path, item_path, template_path, dest_item_path)
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(base_path, from_path, template_path, dest_path):
     """
     Generate a page from a markdown file using a template.
     """
@@ -43,6 +43,8 @@ def generate_page(from_path, template_path, dest_path):
     output = open(template_path, "r").read()
     output = output.replace("{{ Title }}", title)
     output = output.replace("{{ Content }}", html)
+    output = output.replace("href=\"/", f"href=\"{base_path}")
+    output = output.replace("src=\"/", f"src=\"{base_path}")
 
     dest_dir = os.path.dirname(dest_path)
     if not os.path.exists(dest_dir):

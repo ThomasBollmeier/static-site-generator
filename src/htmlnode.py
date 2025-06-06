@@ -50,7 +50,11 @@ class LeafNode(HTMLNode):
        if self.tag is None:
            return f"{self.value}"
        props = self.props_to_html()
-       return f"<{self.tag}{props}>{self.value}</{self.tag}>"
+       if self.tag == "img":
+           # img tags are self-closing
+           return f"<{self.tag}{props}>"
+       else:
+           return f"<{self.tag}{props}>{self.value}</{self.tag}>"
 
 class ParentNode(HTMLNode):
 
